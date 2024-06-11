@@ -27,6 +27,7 @@ DEBUG_FLAG=os.getenv("DEBUG_FLAG")
 # if DEBUG_FLAG : 
 #     print(f'Neo4j URI is {NEO4J_URI} , USER Name is {NEO4J_USERNAME}') 
 #     print(train_data)  
+# chain:any
 try:    
     if DEBUG_FLAG : print("Refreshing graph schema...")
     graph = refreshing_graph_schema()
@@ -40,9 +41,9 @@ try:
     # print(selectors)
     if DEBUG_FLAG : print("Generating prompt...")
     prompt=generate_prompt(selectors)
-    print(prompt)
-    print(prompt.format(question="how many clients are there ?"))
-    selectors.select_examples({"how many clients are there ?"})
+    # print(prompt)
+    # print(prompt.format(question="how many clients are there ?"))
+    # selectors.select_examples({"how many clients are there ?"})
 except Exception as e:
     print("Error while creating selectors or prompts, may be refreshing graph schema!!!")
 
@@ -51,7 +52,7 @@ def generate_ui():
     st.title('🎈 Graph-chatbot')
     #st.set_page_config(page_title="🤗💬 Graph-chatbot")
     st.chat_message("user")
-    st.write("Hello :-)")
+    st.write("Welcome to graph chatbot...")
 
     if "messages" not in st.session_state.keys():
         st.session_state.messages = [{"role": "assistant", "content": "How may I help you?"}]
@@ -95,6 +96,6 @@ if __name__ == "__main__":
     # selectors.select_examples({"how many clients are there ?"})
 
 
-    # response=chain.invoke({"query": "how many clients have the policies ?"})
-    # print(response)
+    response=chain.invoke({"query": "how many clients have the policies ?"})
+    print(response)
     generate_ui()
