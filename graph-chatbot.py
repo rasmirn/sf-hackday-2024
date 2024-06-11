@@ -27,6 +27,24 @@ DEBUG_FLAG=os.getenv("DEBUG_FLAG")
 # if DEBUG_FLAG : 
 #     print(f'Neo4j URI is {NEO4J_URI} , USER Name is {NEO4J_USERNAME}') 
 #     print(train_data)  
+try:    
+    if DEBUG_FLAG : print("Refreshing graph schema...")
+    graph = refreshing_graph_schema()
+    graph.refresh_schema()
+    print(graph.schema)
+    if DEBUG_FLAG : print("Creating LLM and chains....")
+    llm=ChatOpenAI(model=OPEN_AI_MODEL,temperature =0)
+    chain=GraphCypherQAChain.from_llm(graph=graph,llm=llm,verbose=True)
+    if DEBUG_FLAG : print("creating selectors...")
+    selectors=create_selectors(train_data)
+    # print(selectors)
+    if DEBUG_FLAG : print("Generating prompt...")
+    prompt=generate_prompt(selectors)
+    print(prompt)
+    print(prompt.format(question="how many clients are there ?"))
+    selectors.select_examples({"how many clients are there ?"})
+except Exception as e:
+    print("Error while creating selectors or prompts, may be refreshing graph schema!!!")
 
 
 def generate_ui():
@@ -45,30 +63,32 @@ def generate_ui():
             st.write(message["content"])
 
     prompt = st.chat_input("Say something")
-    
+
     if prompt:
-        st.write(f"User has sent the following prompt: {prompt}")
+        response=chain.invoke({"query": prompt})
+        print(response["result"])
+        st.write(f"Answer from LLM: {response["result"]}")
 
 
 if __name__ == "__main__":
-    try:    
-        if DEBUG_FLAG : print("Refreshing graph schema...")
-        # graph = refreshing_graph_schema()
-        # graph.refresh_schema()
-        # print(graph.schema)
-        # if DEBUG_FLAG : print("Creating LLM and chains....")
-        # llm=ChatOpenAI(model=OPEN_AI_MODEL,temperature =0)
-        # chain=GraphCypherQAChain.from_llm(graph=graph,llm=llm,verbose=True)
-        # if DEBUG_FLAG : print("creating selectors...")
-        # selectors=create_selectors(train_data)
-        # # print(selectors)
-        # if DEBUG_FLAG : print("Generating prompt...")
-        # prompt=generate_prompt(selectors)
-        # print(prompt)
-        #print(prompt.format(question="how many clients are there ?"))
-        #selectors.select_examples({"how many clients are there ?"})
-    except Exception as e:
-        print("Error while creating selectors or prompts, may be refreshing graph schema!!!")
+    # try:    
+    #     if DEBUG_FLAG : print("Refreshing graph schema...")
+    #     graph = refreshing_graph_schema()
+    #     graph.refresh_schema()
+    #     print(graph.schema)
+    #     if DEBUG_FLAG : print("Creating LLM and chains....")
+    #     llm=ChatOpenAI(model=OPEN_AI_MODEL,temperature =0)
+    #     chain=GraphCypherQAChain.from_llm(graph=graph,llm=llm,verbose=True)
+    #     if DEBUG_FLAG : print("creating selectors...")
+    #     selectors=create_selectors(train_data)
+    #     # print(selectors)
+    #     if DEBUG_FLAG : print("Generating prompt...")
+    #     prompt=generate_prompt(selectors)
+    #     print(prompt)
+    #     print(prompt.format(question="how many clients are there ?"))
+    #     selectors.select_examples({"how many clients are there ?"})
+    # except Exception as e:
+    #     print("Error while creating selectors or prompts, may be refreshing graph schema!!!")
 
 
     # print(prompt.format(question="how many clients are there ?"))
