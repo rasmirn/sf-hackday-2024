@@ -3,6 +3,7 @@
 #######################################
 import os
 from dotenv import load_dotenv
+import time
 
 ## Neo4j imports
 from neo4j import GraphDatabase
@@ -49,9 +50,9 @@ except Exception as e:
 
 
 def generate_ui():
-    st.title('🎈 Graph-chatbot')
+    st.title('Customer-Graph-chatbot')
     #st.set_page_config(page_title="🤗💬 Graph-chatbot")
-    st.chat_message("user")
+    st.chat_message("assistant")
     st.write("Welcome to graph chatbot...")
 
     if "messages" not in st.session_state.keys():
@@ -59,16 +60,24 @@ def generate_ui():
 
     
     # Display chat messages
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.write(message["content"])
+    # for message in st.session_state.messages:
+    #     with st.chat_message(message["role"]):
+    #         st.write(message["content"])
 
     prompt = st.chat_input("Say something")
 
     if prompt:
-        response=chain.invoke({"query": prompt})
-        print(response["result"])
-        st.write(f"Answer from LLM: {response["result"]}")
+        with st.spinner("Loading...."):
+            time.sleep(1)
+            response=chain.invoke({"query": prompt})
+            st.session_state.messages.append({"role":"user","content": prompt})
+            print(f'response from LLM is {response["result"]}')
+            st.session_state.messages.append({"role":"assistant","content": response["result"]})
+            #st.write(f"Answer from LLM: {response["result"]}")
+            for message in st.session_state.messages:
+                with st.chat_message(message["role"]):
+                    if  message != "How may I help you?" : st.write(message["content"])
+                    #st.success("Done")
 
 
 if __name__ == "__main__":
